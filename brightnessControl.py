@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 import time
 import HandTrackingModule as htm
-import math
 import screen_brightness_control as sbc
 
 #####################################
