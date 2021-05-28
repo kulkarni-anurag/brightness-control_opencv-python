@@ -19,47 +19,50 @@ cTime = 0
 detector = htm.handDetector(detectionConfidence = 0.7)
 
 briBar = 400
-briPer = 0
+#briPer = 0
 brightness = sbc.get_brightness()
+Area = 0
 
 while(True):
     #Capture frame by frame
     success, img = cap.read()
 
     img = detector.findHands(img, draw = False)
-    lmList = detector.findPosition(img, draw = False)
+    lmList, bbox = detector.findPosition(img, draw = False)
     if len(lmList) != 0:
-        #print(lmList[4], lmList[8])
 
-        x1, y1 = lmList[4][1], lmList[4][2]
-        x2, y2 = lmList[8][1], lmList[8][2]
+        #Filter Based on size
+        Area = (bbox[2] - bbox[0])*(bbox[3] - bbox[1])//100
+        #print(Area)
 
-        cx, cy = (x1 + x2)//2, (y1 + y1)//2
+        if 250 < Area < 950:
 
-        cv2.circle(img, (x1, y1), 10, (255, 0, 0), cv2.FILLED)
-        cv2.circle(img, (x2, y2), 10, (255, 0, 0), cv2.FILLED)
+            #print(lmList[4], lmList[8])
+            length, img, lineInfo = detector.findDistance(4, 8, img)
 
-        cv2.line(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
 
-        #cv2.circle(img, (cx, cy), 10, (255, 0, 0), cv2.FILLED)
+            #cv2.circle(img, (cx, cy), 10, (255, 0, 0), cv2.FILLED)
+            #print(length)
 
-        length = math.hypot(x2-x1, y2-y1)
-        #print(length)
+            #Hand Range from 30 to 180
+            #Brightness Range from 0 to 100
+            
+            brightness = np.interp(length, [30, 180], [0, 100])
+            briBar = np.interp(length, [30, 180], [400, 150])
 
-        #Hand Range from 30 to 180
-        #Brightness Range from 0 to 100
-        
-        brightness = np.interp(length, [30, 180], [0, 100])
-        briBar = np.interp(length, [30, 180], [400, 150])
+            brightness = int(brightness)
+            
+            #print(int(length), brightness)
+            smoothness = 10
+            brightness = smoothness * round(brightness/smoothness)
 
-        brightness = int(brightness)
-        
-        #print(int(length), brightness)
+            fingers = detector.fingersUp()
 
-        sbc.set_brightness(brightness)
+            if not fingers[3]:
+                sbc.set_brightness(brightness)
 
-        #if length < 30:
-           #cv2.circle(img, (cx, cy), 10, (0, 255, 0), cv2.FILLED)
+            #if length < 30:
+            #cv2.circle(img, (cx, cy), 10, (0, 255, 0), cv2.FILLED)
 
     cv2.rectangle(img, (50, 150), (85, 400), (0, 255, 0))
     cv2.rectangle(img, (50, int(briBar)), (85, 400), (0, 255, 0), cv2.FILLED)
