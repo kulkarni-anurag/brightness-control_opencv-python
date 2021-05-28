@@ -28,7 +28,7 @@ while(True):
     success, img = cap.read()
 
     img = detector.findHands(img, draw = False)
-    lmList, bbox = detector.findPosition(img, draw = False)
+    lmList, bbox = detector.findPosition(img, draw = True)
     if len(lmList) != 0:
 
         #Filter Based on size
